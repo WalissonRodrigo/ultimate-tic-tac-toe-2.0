@@ -23,6 +23,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -177,7 +178,11 @@
             <div class="modal-icon" id="modal-icon" aria-hidden="true"></div>
             <h2 id="winner-text" data-i18n="victory">VICTORY</h2>
             <p class="modal-sub" id="winner-sub">Player X dominated the meta-grid.</p>
-            <button id="modal-reset-btn" class="action-btn modal-action" data-i18n="playAgain">PLAY AGAIN</button>
+            <div class="modal-actions-grid">
+                <button id="modal-reset-btn" class="action-btn modal-action" data-i18n="playAgain">PLAY AGAIN</button>
+                <button id="modal-analyze-btn" class="action-btn modal-action secondary-btn" data-i18n="analyzeBoard">ANALYZE BOARD</button>
+                <button id="modal-export-btn" class="action-btn modal-action secondary-btn" data-i18n="exportMatch">EXPORT MATCH</button>
+            </div>
         </div>
     </div>
 

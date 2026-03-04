@@ -734,6 +734,33 @@ body {
 
 .modal-action { width: 100%; }
 
+.modal-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+@media (min-width: 480px) {
+    .modal-actions-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    #modal-reset-btn { grid-column: span 2; }
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-dim);
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--text);
+    color: var(--text);
+}
+
 /* ============================================================
    Responsive — stack to single column on small screens
    ============================================================ */

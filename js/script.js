@@ -62,7 +62,9 @@ const TRANSLATIONS = {
         privacyPolicy: 'Privacy Policy',
         accept: 'ACCEPT',
         scoreSubWins: 'Sub-Wins',
-        logoHTML: 'ULTIMATE<br>TIC-TAC-TOE <span class="cyan">2.0</span>'
+        logoHTML: 'ULTIMATE<br>TIC-TAC-TOE <span class="cyan">2.0</span>',
+        analyzeBoard: 'ANALYZE BOARD',
+        exportMatch: 'EXPORT MATCH'
     },
     'pt-BR': {
         mainTitle: 'JOGO DA VELHA 2.0',
@@ -97,7 +99,9 @@ const TRANSLATIONS = {
         privacyPolicy: 'Política de Privacidade',
         accept: 'ACEITAR',
         scoreSubWins: 'Sub-Vitórias',
-        logoHTML: 'JOGO DA<br>VELHA <span class="cyan">2.0</span>'
+        logoHTML: 'JOGO DA<br>VELHA <span class="cyan">2.0</span>',
+        analyzeBoard: 'ANALISAR TABULEIRO',
+        exportMatch: 'EXPORTAR PARTIDA'
     },
     'es-ES': {
         mainTitle: 'TRES EN RAYA 2.0',
@@ -132,7 +136,9 @@ const TRANSLATIONS = {
         privacyPolicy: 'Política de Privacidad',
         accept: 'ACEPTAR',
         scoreSubWins: 'Sub-Victorias',
-        logoHTML: 'TRES EN<br>RAYA <span class="cyan">2.0</span>'
+        logoHTML: 'TRES EN<br>RAYA <span class="cyan">2.0</span>',
+        analyzeBoard: 'ANALIZAR TABLERO',
+        exportMatch: 'EXPORTAR PARTIDA'
     }
 };
 
@@ -176,6 +182,8 @@ function updateLanguage(lang) {
 // ============================================================
 // DOM References
 // ============================================================
+const modalAnalyzeBtn = document.getElementById('modal-analyze-btn');
+const modalExportBtn = document.getElementById('modal-export-btn');
 const metaBoardEl     = document.getElementById('ultimate-board');
 const turnSymbolEl    = document.getElementById('current-turn-symbol');
 const turnTimerEl     = document.getElementById('turn-timer');
@@ -692,6 +700,23 @@ function bootGame() {
 // Events
 resetBtn.addEventListener('click', resetGame);
 modalResetBtn.addEventListener('click', resetGame);
+
+// Analysis & Export
+modalAnalyzeBtn.addEventListener('click', () => {
+    winModal.classList.remove('show');
+});
+
+modalExportBtn.addEventListener('click', () => {
+    html2canvas(document.querySelector('.board-area'), {
+        backgroundColor: '#080c14',
+        scale: 2
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `ultimate-ttt-match-${Date.now()}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+});
 
 // Start
 handleInit();
