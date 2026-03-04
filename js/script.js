@@ -132,6 +132,7 @@ function updateLanguage(lang) {
     
     // Update Document Title & Meta
     document.title = t.mainTitle;
+    document.documentElement.lang = lang; // Lighthouse SEO: dynamic lang attribute
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', t.metaDescription);
 

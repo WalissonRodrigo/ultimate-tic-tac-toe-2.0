@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://walissonrodrigo.github.io/ultimate-tic-tac-toe-2.0/sitemap.xml

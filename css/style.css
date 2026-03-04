@@ -654,6 +654,26 @@ body {
     box-shadow: 0 0 10px var(--pink-dim);
 }
 
+.sidebar-footer {
+    margin-top: auto;
+    padding: 1.5rem 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    font-family: var(--font-display);
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.footer-credit {
+    margin-bottom: 4px;
+    color: var(--text-dim);
+}
+
+.footer-corp {
+    font-weight: 700;
+}
+
 .modal-action { width: 100%; }
 
 /* ============================================================

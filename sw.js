@@ -1,10 +1,10 @@
-const CACHE_NAME = 'utt-v1';
+const CACHE_NAME = 'utt-v2';
 const ASSETS = [
   './',
   './index.html',
-  './style.css',
-  './script.js',
-  './favicon.png',
+  './css/style.css',
+  './js/script.js',
+  './assets/favicon.png',
   './manifest.json'
 ];
 
