@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Tic-Tac-Toe 2.0</title>
+    <meta name="description" content="Ultimate Tic-Tac-Toe 2.0 — Jogo da Velha avançado com sub-tabuleiros estratégicos e IA.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Background FX -->
+    <div class="bg-fx">
+        <div class="bg-gradient"></div>
+        <div class="bg-grid"></div>
+        <div class="bg-glow bg-glow--cyan"></div>
+        <div class="bg-glow bg-glow--pink"></div>
+        <div class="scan-line"></div>
+    </div>
+
+    <div class="app-layout">
+
+        <!-- ============ LEFT: BOARD AREA ============ -->
+        <section class="board-area">
+            <header class="top-bar">
+                <div class="top-bar__left">
+                    <span class="logo-icon">⬡</span>
+                    <span class="logo-text">ULTIMATE<br>TIC-TAC-TOE <span class="cyan">2.0</span></span>
+                </div>
+            </header>
+
+            <!-- Turn Bar -->
+            <div class="turn-bar">
+                <div class="turn-bar__left">
+                    CURRENT TURN: <span id="current-turn-symbol" class="turn-symbol cyan">X</span>
+                </div>
+                <div class="turn-bar__right">
+                    <span id="turn-timer" class="timer"></span>
+                </div>
+            </div>
+
+            <!-- The Board -->
+            <div class="board-wrapper">
+                <div id="ultimate-board" class="meta-grid"></div>
+            </div>
+        </section>
+
+        <!-- ============ RIGHT: SIDEBAR ============ -->
+        <aside class="sidebar">
+
+            <!-- Panel: Game Status -->
+            <div class="panel">
+                <div class="panel__header">GAME STATUS</div>
+                <div class="panel__body" id="panel-status">
+                    <div class="status-row">
+                        <span class="status-label">TURN:</span>
+                        <span class="status-value" id="status-turn">PLAYER 1 [X]</span>
+                    </div>
+                    <div class="status-row" id="ai-thinking-row" style="display:none;">
+                        <span class="thinking-dots">
+                            <span></span><span></span><span></span>
+                        </span>
+                        <span class="status-value pink">IA PROCESSANDO...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Scoreboard -->
+            <div class="panel">
+                <div class="panel__header">SCOREBOARD</div>
+                <div class="panel__body scoreboard-body">
+                    <div class="score-player">
+                        <svg class="score-icon" viewBox="0 0 40 40" width="32" height="32">
+                            <line x1="8" y1="8" x2="32" y2="32" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="32" y1="8" x2="8" y2="32" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                        <div class="score-info">
+                            <span class="score-name">Player 1</span>
+                            <span class="score-wins" id="score-x-wins">0 Wins</span>
+                        </div>
+                    </div>
+                    <span class="score-vs">VS</span>
+                    <div class="score-player">
+                        <svg class="score-icon" viewBox="0 0 40 40" width="32" height="32">
+                            <circle cx="20" cy="20" r="13" fill="none" stroke="#ff2eea" stroke-width="4"/>
+                        </svg>
+                        <div class="score-info">
+                            <span class="score-name">Player 2</span>
+                            <span class="score-wins" id="score-o-wins">0 Wins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Active Board -->
+            <div class="panel">
+                <div class="panel__header">
+                    ACTIVE BOARD: <span id="active-sector" class="cyan">ALL</span>
+                    <span class="signal-icon" id="signal-icon">◉</span>
+                </div>
+                <div class="panel__body">
+                    <div class="mini-grid" id="mini-grid">
+                        <!-- 9 mini cells showing which sub-grids are active/won -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="sidebar-actions">
+                <button id="reset-btn" class="action-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                    REINICIAR
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modal-icon"></div>
+            <h2 id="winner-text">VITÓRIA</h2>
+            <p class="modal-sub" id="winner-sub">Jogador X dominou o meta-grid!</p>
+            <button id="modal-reset-btn" class="action-btn modal-action">JOGAR NOVAMENTE</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
