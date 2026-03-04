@@ -35,6 +35,7 @@ const statusTurnEl    = document.getElementById('status-turn');
 const aiThinkingRow   = document.getElementById('ai-thinking-row');
 const scoreXWinsEl    = document.getElementById('score-x-wins');
 const scoreOWinsEl    = document.getElementById('score-o-wins');
+const playerXNameEl   = document.getElementById('player-x-name');
 const activeSectorEl  = document.getElementById('active-sector');
 const signalIconEl    = document.getElementById('signal-icon');
 const miniGridEl      = document.getElementById('mini-grid');
@@ -44,6 +45,10 @@ const winModal        = document.getElementById('win-modal');
 const winnerTextEl    = document.getElementById('winner-text');
 const winnerSubEl     = document.getElementById('winner-sub');
 const modalIconEl     = document.getElementById('modal-icon');
+
+const profileModal    = document.getElementById('profile-modal');
+const usernameInput   = document.getElementById('username-input');
+const saveProfileBtn  = document.getElementById('save-profile-btn');
 
 // ============================================================
 // State
@@ -59,6 +64,7 @@ const SECTOR_NAMES = ['NW','N','NE','W','C','E','SW','S','SE'];
 let state = freshState();
 let turnStart = Date.now();
 let timerInterval = null;
+let profile = { name: 'PLAYER 1', wins: 0, aiWins: 0 };
 
 function freshState() {
     return {
@@ -69,6 +75,34 @@ function freshState() {
         gameActive: true,
         isAIThinking: false
     };
+}
+
+// ============================================================
+// Persistence Logic
+// ============================================================
+function saveToLocal() {
+    localStorage.setItem('utt_state', JSON.stringify(state));
+    localStorage.setItem('utt_profile', JSON.stringify(profile));
+}
+
+function loadFromLocal() {
+    const savedState = localStorage.getItem('utt_state');
+    const savedProfile = localStorage.getItem('utt_profile');
+
+    if (savedProfile) {
+        profile = JSON.parse(savedProfile);
+        playerXNameEl.textContent = profile.name.toUpperCase();
+    }
+
+    if (savedState) {
+        const parsed = JSON.parse(savedState);
+        // Only load if the game was actually active
+        if (parsed.gameActive) {
+            state = parsed;
+            return true;
+        }
+    }
+    return false;
 }
 
 // ============================================================
@@ -88,25 +122,52 @@ function startTimer() {
 // ============================================================
 // Board Init
 // ============================================================
-function initBoard() {
+function initBoard(isContinuation = false) {
     metaBoardEl.innerHTML = '';
     for (let i = 0; i < 9; i++) {
         const sub = document.createElement('div');
         sub.classList.add('sub-grid');
         sub.dataset.index = i;
+        
+        // Re-apply visual state if continuing
+        if (state.metaBoard[i]) {
+            sub.classList.add(state.metaBoard[i] === 'draw' ? 'draw-grid' : `won-${state.metaBoard[i].toLowerCase()}`);
+        }
+
         for (let j = 0; j < 9; j++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
             cell.dataset.sub = i;
             cell.dataset.cell = j;
             cell.addEventListener('click', onCellClick);
+            
+            // Re-apply piece if continuing
+            if (state.subBoards[i][j]) {
+                cell.innerHTML = state.subBoards[i][j] === 'X' ? svgX() : svgO();
+                cell.classList.add('occupied', state.subBoards[i][j].toLowerCase());
+            }
+
             sub.appendChild(cell);
         }
+
+        // Re-apply big SVG overlay if subgrid is won
+        if (state.metaBoard[i] && state.metaBoard[i] !== 'draw') {
+            const overlay = document.createElement('div');
+            overlay.classList.add('won-overlay');
+            overlay.innerHTML = state.metaBoard[i] === 'X' ? svgXBig() : svgOBig();
+            sub.appendChild(overlay);
+        }
+
         metaBoardEl.appendChild(sub);
     }
     initMiniGrid();
     updateUI();
     startTimer();
+
+    // If it's AI turn after load, trigger it
+    if (state.gameActive && state.currentPlayer === 'O') {
+        triggerAI();
+    }
 }
 
 function initMiniGrid() {
@@ -127,8 +188,11 @@ function onCellClick(e) {
     if (!state.gameActive) return;
     if (state.currentPlayer !== 'X') return;
 
-    const subIdx  = parseInt(e.target.closest('.cell').dataset.sub);
-    const cellIdx = parseInt(e.target.closest('.cell').dataset.cell);
+    const cellTarget = e.target.closest('.cell');
+    if (!cellTarget) return;
+
+    const subIdx  = parseInt(cellTarget.dataset.sub);
+    const cellIdx = parseInt(cellTarget.dataset.cell);
     executeMove(subIdx, cellIdx);
 }
 
@@ -167,19 +231,25 @@ function executeMove(subIdx, cellIdx) {
     state.currentPlayer = state.currentPlayer === 'X' ? 'O' : 'X';
     startTimer();
     updateUI();
+    saveToLocal();
 
     // AI
     if (state.gameActive && state.currentPlayer === 'O') {
-        state.isAIThinking = true;
-        metaBoardEl.classList.add('board-locked');
-        aiThinkingRow.style.display = 'flex';
-        setTimeout(() => {
-            aiPlay();
-            state.isAIThinking = false;
-            metaBoardEl.classList.remove('board-locked');
-            aiThinkingRow.style.display = 'none';
-        }, 600 + Math.random() * 400);
+        triggerAI();
     }
+}
+
+function triggerAI() {
+    state.isAIThinking = true;
+    metaBoardEl.classList.add('board-locked');
+    aiThinkingRow.style.display = 'flex';
+    setTimeout(() => {
+        aiPlay();
+        state.isAIThinking = false;
+        metaBoardEl.classList.remove('board-locked');
+        aiThinkingRow.style.display = 'none';
+        saveToLocal();
+    }, 600 + Math.random() * 400);
 }
 
 // ============================================================
@@ -204,7 +274,7 @@ function resolveSubBoard(subIdx) {
         state.metaBoard[subIdx] = winner;
         const subEl = metaBoardEl.querySelector(`.sub-grid[data-index="${subIdx}"]`);
         subEl.classList.add(`won-${winner.toLowerCase()}`);
-        // Add big SVG overlay
+        
         const overlay = document.createElement('div');
         overlay.classList.add('won-overlay');
         overlay.innerHTML = winner === 'X' ? svgXBig() : svgOBig();
@@ -244,8 +314,6 @@ function aiPlay() {
     const block = moves.find(m => simulate(m, 'X'));
     if (block) { executeMove(block.sub, block.cell); return; }
 
-    // 3. Strategic: prefer sending opponent to a won/full grid (gives them free choice is bad, but sending to a grid we're strong in is good)
-    // Simplified: prefer center → corners → random
     const center = moves.filter(m => m.cell === 4);
     if (center.length) { pick(center); return; }
 
@@ -292,21 +360,17 @@ function updateUI() {
     turnSymbolEl.style.verticalAlign = 'middle';
 
     // Status panel
-    statusTurnEl.textContent = isX ? 'PLAYER 1 [X]' : 'IA [O]';
+    statusTurnEl.textContent = isX ? `${profile.name.toUpperCase()} [X]` : 'AI UNIT [O]';
     statusTurnEl.className = 'status-value ' + (isX ? 'cyan' : 'pink');
 
     // Scoreboard
     const xW = state.metaBoard.filter(v => v === 'X').length;
     const oW = state.metaBoard.filter(v => v === 'O').length;
-    scoreXWinsEl.textContent = `${xW} Wins`;
-    scoreOWinsEl.textContent = `${oW} Wins`;
+    scoreXWinsEl.textContent = `${profile.wins + xW} Sub-Wins`; // Total = previous game wins + current subgrids
+    scoreOWinsEl.textContent = `${profile.aiWins + oW} Sub-Wins`;
 
     // Active sector
-    if (state.activeSubGridIndex === -1) {
-        activeSectorEl.textContent = 'ALL';
-    } else {
-        activeSectorEl.textContent = SECTOR_NAMES[state.activeSubGridIndex];
-    }
+    activeSectorEl.textContent = state.activeSubGridIndex === -1 ? 'ALL' : SECTOR_NAMES[state.activeSubGridIndex];
 
     // Sub-grid highlighting
     const subs = metaBoardEl.querySelectorAll('.sub-grid');
@@ -341,20 +405,23 @@ function endGame(winner) {
 
     if (winner === 'draw') {
         modalIconEl.innerHTML = '<span style="font-size:4rem;color:var(--text-dim)">—</span>';
-        winnerTextEl.textContent = 'EMPATE';
-        winnerSubEl.textContent = 'Nenhum jogador dominou o meta-grid.';
+        winnerTextEl.textContent = 'DRAW';
+        winnerSubEl.textContent = 'Neutral outcome. The meta-grid remains contested.';
     } else if (winner === 'X') {
         modalIconEl.innerHTML = `<div style="width:64px;height:64px;margin:0 auto;">${svgXBig()}</div>`;
-        winnerTextEl.textContent = 'VITÓRIA';
+        winnerTextEl.textContent = 'VICTORY';
         winnerTextEl.style.color = 'var(--cyan)';
-        winnerSubEl.textContent = 'Jogador X dominou o meta-grid!';
+        winnerSubEl.textContent = `${profile.name} dominated the meta-grid.`;
+        profile.wins++;
     } else {
         modalIconEl.innerHTML = `<div style="width:64px;height:64px;margin:0 auto;">${svgOBig()}</div>`;
-        winnerTextEl.textContent = 'DERROTA';
+        winnerTextEl.textContent = 'DEFEAT';
         winnerTextEl.style.color = 'var(--pink)';
-        winnerSubEl.textContent = 'A IA dominou o meta-grid.';
+        winnerSubEl.textContent = 'AI Unit dominated the meta-grid.';
+        profile.aiWins++;
     }
 
+    saveToLocal();
     winModal.classList.add('show');
 }
 
@@ -367,12 +434,46 @@ function resetGame() {
     metaBoardEl.classList.remove('board-locked');
     aiThinkingRow.style.display = 'none';
     winnerTextEl.style.color = '';
+    saveToLocal();
     initBoard();
 }
 
 // ============================================================
-// Events & Boot
+// Profile Logic
 // ============================================================
+function handleProfile() {
+    const savedProfile = localStorage.getItem('utt_profile');
+    if (!savedProfile) {
+        profileModal.classList.add('show');
+    } else {
+        profile = JSON.parse(savedProfile);
+        playerXNameEl.textContent = profile.name.toUpperCase();
+        bootGame();
+    }
+}
+
+saveProfileBtn.addEventListener('click', () => {
+    const val = usernameInput.value.trim();
+    if (val) {
+        profile.name = val;
+        localStorage.setItem('utt_profile', JSON.stringify(profile));
+        playerXNameEl.textContent = profile.name.toUpperCase();
+        profileModal.classList.remove('show');
+        bootGame();
+    }
+});
+
+// ============================================================
+// Boot
+// ============================================================
+function bootGame() {
+    const continued = loadFromLocal();
+    initBoard(continued);
+}
+
+// Events
 resetBtn.addEventListener('click', resetGame);
 modalResetBtn.addEventListener('click', resetGame);
-initBoard();
+
+// Start
+handleProfile();
