@@ -1,0 +1,17 @@
+{
+  "name": "Ultimate Tic-Tac-Toe 2.0",
+  "short_name": "Ultimate TTT",
+  "description": "Advanced strategic Tic-Tac-Toe with AI.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#00e5ff",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -26,6 +26,141 @@ function svgOBig() {
 }
 
 // ============================================================
+// Localization (i18n)
+// ============================================================
+const TRANSLATIONS = {
+    'en-GB': {
+        mainTitle: 'ULTIMATE TIC-TAC-TOE 2.0',
+        metaDescription: 'Advanced Tic-Tac-Toe with strategic sub-grids and AI unit.',
+        currentTurn: 'CURRENT TURN',
+        gameStatus: 'GAME STATUS',
+        turn: 'TURN',
+        aiProcessing: 'AI PROCESSING...',
+        scoreboard: 'SCOREBOARD',
+        player1: 'PLAYER 1',
+        aiUnit: 'AI UNIT',
+        activeSector: 'ACTIVE SECTOR',
+        settings: 'SETTINGS',
+        language: 'LANGUAGE',
+        restartGame: 'RESTART GAME',
+        initializing: 'INITIALIZING...',
+        welcomeMsg: 'Incoming User Detected. Please enter your codename.',
+        codenamePlaceholder: 'CODENAME',
+        accessSystem: 'ACCESS SYSTEM',
+        victory: 'VICTORY',
+        defeat: 'DEFEAT',
+        draw: 'DRAW',
+        playAgain: 'PLAY AGAIN',
+        winMsg: '{name} dominated the meta-grid.',
+        drawMsg: 'Neutral outcome. The meta-grid remains contested.',
+        aiDefeatMsg: 'AI Unit dominated the meta-grid.',
+        all: 'ALL',
+        resetProfile: 'RESET PROFILE',
+        resetScore: 'RESET SCORE',
+        scoreSubWins: 'Sub-Wins',
+        logoHTML: 'ULTIMATE<br>TIC-TAC-TOE <span class="cyan">2.0</span>'
+    },
+    'pt-BR': {
+        mainTitle: 'JOGO DA VELHA 2.0',
+        metaDescription: 'Jogo da Velha avançado com sub-tabuleiros estratégicos e unidade IA.',
+        currentTurn: 'TURNO ATUAL',
+        gameStatus: 'STATUS DO JOGO',
+        turn: 'TURNO',
+        aiProcessing: 'IA PROCESSANDO...',
+        scoreboard: 'PLACAR',
+        player1: 'JOGADOR 1',
+        aiUnit: 'UNIDADE IA',
+        activeSector: 'SETOR ATIVO',
+        settings: 'CONFIGURAÇÕES',
+        language: 'IDIOMA',
+        restartGame: 'REINICIAR JOGO',
+        initializing: 'INICIALIZANDO...',
+        welcomeMsg: 'Usuário Detectado. Por favor, insira seu codinome.',
+        codenamePlaceholder: 'CODINOME',
+        accessSystem: 'ACESSAR SISTEMA',
+        victory: 'VITÓRIA',
+        defeat: 'DERROTA',
+        draw: 'EMPATE',
+        playAgain: 'JOGAR NOVAMENTE',
+        winMsg: '{name} dominou o meta-grid.',
+        drawMsg: 'Resultado neutro. O meta-grid permanece contestado.',
+        aiDefeatMsg: 'Unidade IA dominou o meta-grid.',
+        all: 'TODOS',
+        resetProfile: 'ALTERAR PERFIL',
+        resetScore: 'RESETE PLACAR',
+        scoreSubWins: 'Sub-Vitórias',
+        logoHTML: 'JOGO DA<br>VELHA <span class="cyan">2.0</span>'
+    },
+    'es-ES': {
+        mainTitle: 'TRES EN RAYA 2.0',
+        metaDescription: 'Tres en Raya avanzado con sub-grids estratégicos y unidad IA.',
+        currentTurn: 'TURNO ACTUAL',
+        gameStatus: 'ESTADO DEL JUEGO',
+        turn: 'TURNO',
+        aiProcessing: 'IA PROCESANDO...',
+        scoreboard: 'PUNTUACIÓN',
+        player1: 'JUGADOR 1',
+        aiUnit: 'UNIDAD IA',
+        activeSector: 'SECTOR ACTIVO',
+        settings: 'AJUSTES',
+        language: 'IDIOMA',
+        restartGame: 'REINICIAR JUEGO',
+        initializing: 'INICIALIZANDO...',
+        welcomeMsg: 'Usuario Detectado. Por favor, ingrese su nombre en clave.',
+        codenamePlaceholder: 'NOMBRE EN CLAVE',
+        accessSystem: 'ACCEDER AL SISTEMA',
+        victory: 'VICTORIA',
+        defeat: 'DERROTA',
+        draw: 'EMPATE',
+        playAgain: 'JOGAR DE NUEVO',
+        winMsg: '{name} dominó el meta-grid.',
+        drawMsg: 'Resultado neutral. El meta-grid sigue en disputa.',
+        aiDefeatMsg: 'La Unidad IA dominó el meta-grid.',
+        all: 'TODOS',
+        resetProfile: 'CAMBIAR PERFIL',
+        resetScore: 'RESET MARCADOR',
+        scoreSubWins: 'Sub-Victorias',
+        logoHTML: 'TRES EN<br>RAYA <span class="cyan">2.0</span>'
+    }
+};
+
+let currentLang = 'en-GB';
+
+function updateLanguage(lang) {
+    currentLang = lang;
+    const t = TRANSLATIONS[lang];
+    
+    // Update Document Title & Meta
+    document.title = t.mainTitle;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', t.metaDescription);
+
+    // Update Logo Text
+    const logoEl = document.querySelector('.logo-text');
+    if (logoEl && t.logoHTML) {
+        logoEl.innerHTML = t.logoHTML;
+    }
+
+    // Update all elements with data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+    });
+
+    // Update placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (t[key]) el.placeholder = t[key];
+    });
+
+    // Save choice
+    localStorage.setItem('utt_lang', lang);
+    
+    // Update dynamic UI elements immediately
+    updateUI();
+}
+
+// ============================================================
 // DOM References
 // ============================================================
 const metaBoardEl     = document.getElementById('ultimate-board');
@@ -49,6 +184,11 @@ const modalIconEl     = document.getElementById('modal-icon');
 const profileModal    = document.getElementById('profile-modal');
 const usernameInput   = document.getElementById('username-input');
 const saveProfileBtn  = document.getElementById('save-profile-btn');
+const langSelect      = document.getElementById('lang-select');
+
+// Management Buttons
+const changeProfileBtn = document.getElementById('change-profile-btn');
+const resetScoreBtn    = document.getElementById('reset-score-btn');
 
 // ============================================================
 // State
@@ -350,6 +490,7 @@ function pick(arr) {
 // ============================================================
 function updateUI() {
     const isX = state.currentPlayer === 'X';
+    const t = TRANSLATIONS[currentLang];
 
     // Turn symbol
     turnSymbolEl.innerHTML = isX ? svgX() : svgO();
@@ -360,17 +501,18 @@ function updateUI() {
     turnSymbolEl.style.verticalAlign = 'middle';
 
     // Status panel
-    statusTurnEl.textContent = isX ? `${profile.name.toUpperCase()} [X]` : 'AI UNIT [O]';
+    const pName = isX ? profile.name.toUpperCase() : t.aiUnit;
+    statusTurnEl.textContent = `${pName} [${state.currentPlayer}]`;
     statusTurnEl.className = 'status-value ' + (isX ? 'cyan' : 'pink');
 
     // Scoreboard
     const xW = state.metaBoard.filter(v => v === 'X').length;
     const oW = state.metaBoard.filter(v => v === 'O').length;
-    scoreXWinsEl.textContent = `${profile.wins + xW} Sub-Wins`; // Total = previous game wins + current subgrids
+    scoreXWinsEl.textContent = `${profile.wins + xW} Sub-Wins`;
     scoreOWinsEl.textContent = `${profile.aiWins + oW} Sub-Wins`;
 
     // Active sector
-    activeSectorEl.textContent = state.activeSubGridIndex === -1 ? 'ALL' : SECTOR_NAMES[state.activeSubGridIndex];
+    activeSectorEl.textContent = state.activeSubGridIndex === -1 ? t.all : SECTOR_NAMES[state.activeSubGridIndex];
 
     // Sub-grid highlighting
     const subs = metaBoardEl.querySelectorAll('.sub-grid');
@@ -402,22 +544,23 @@ function updateUI() {
 function endGame(winner) {
     state.gameActive = false;
     clearInterval(timerInterval);
+    const t = TRANSLATIONS[currentLang];
 
     if (winner === 'draw') {
         modalIconEl.innerHTML = '<span style="font-size:4rem;color:var(--text-dim)">—</span>';
-        winnerTextEl.textContent = 'DRAW';
-        winnerSubEl.textContent = 'Neutral outcome. The meta-grid remains contested.';
+        winnerTextEl.textContent = t.draw;
+        winnerSubEl.textContent = t.drawMsg;
     } else if (winner === 'X') {
         modalIconEl.innerHTML = `<div style="width:64px;height:64px;margin:0 auto;">${svgXBig()}</div>`;
-        winnerTextEl.textContent = 'VICTORY';
+        winnerTextEl.textContent = t.victory;
         winnerTextEl.style.color = 'var(--cyan)';
-        winnerSubEl.textContent = `${profile.name} dominated the meta-grid.`;
+        winnerSubEl.textContent = t.winMsg.replace('{name}', profile.name);
         profile.wins++;
     } else {
         modalIconEl.innerHTML = `<div style="width:64px;height:64px;margin:0 auto;">${svgOBig()}</div>`;
-        winnerTextEl.textContent = 'DEFEAT';
+        winnerTextEl.textContent = t.defeat;
         winnerTextEl.style.color = 'var(--pink)';
-        winnerSubEl.textContent = 'AI Unit dominated the meta-grid.';
+        winnerSubEl.textContent = t.aiDefeatMsg;
         profile.aiWins++;
     }
 
@@ -439,9 +582,25 @@ function resetGame() {
 }
 
 // ============================================================
-// Profile Logic
+// Profile & Language Logic
 // ============================================================
-function handleProfile() {
+function handleInit() {
+    // 1. Language
+    const savedLang = localStorage.getItem('utt_lang');
+    if (savedLang && TRANSLATIONS[savedLang]) {
+        currentLang = savedLang;
+        langSelect.value = savedLang;
+    } else {
+        // Try browser language
+        const browserLang = navigator.language;
+        if (browserLang.startsWith('pt')) currentLang = 'pt-BR';
+        else if (browserLang.startsWith('es')) currentLang = 'es-ES';
+        else currentLang = 'en-GB';
+        langSelect.value = currentLang;
+    }
+    updateLanguage(currentLang);
+
+    // 2. Profile
     const savedProfile = localStorage.getItem('utt_profile');
     if (!savedProfile) {
         profileModal.classList.add('show');
@@ -451,6 +610,21 @@ function handleProfile() {
         bootGame();
     }
 }
+
+langSelect.addEventListener('change', (e) => {
+    updateLanguage(e.target.value);
+});
+
+changeProfileBtn.addEventListener('click', () => {
+    profileModal.classList.add('show');
+});
+
+resetScoreBtn.addEventListener('click', () => {
+    profile.wins = 0;
+    profile.aiWins = 0;
+    saveToLocal();
+    updateUI();
+});
 
 saveProfileBtn.addEventListener('click', () => {
     const val = usernameInput.value.trim();
@@ -462,6 +636,17 @@ saveProfileBtn.addEventListener('click', () => {
         bootGame();
     }
 });
+
+// ============================================================
+// PWA Service Worker Registration
+// ============================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW registered'))
+            .catch(err => console.log('SW error', err));
+    });
+}
 
 // ============================================================
 // Boot
@@ -476,4 +661,4 @@ resetBtn.addEventListener('click', resetGame);
 modalResetBtn.addEventListener('click', resetGame);
 
 // Start
-handleProfile();
+handleInit();
