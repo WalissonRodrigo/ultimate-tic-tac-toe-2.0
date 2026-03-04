@@ -714,27 +714,23 @@ modalAnalyzeBtn.addEventListener('click', () => {
 
 const exportHandler = () => {
     const boardArea = document.querySelector('.board-area');
-    // Ensure the board has a clean background for the snapshot
-    html2canvas(boardArea, {
-        backgroundColor: '#080c14',
-        scale: 3, // High-res
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        imageTimeout: 0,
-        onclone: (clonedDoc) => {
-            // Adjust cloned elements for better snapshot (if needed)
-            const clonedBoard = clonedDoc.querySelector('.board-area');
-            if (clonedBoard) {
-                clonedBoard.style.padding = '20px';
-                clonedBoard.style.backgroundColor = '#080c14';
-            }
+    
+    domtoimage.toPng(boardArea, {
+        quality: 1.0,
+        bgcolor: '#080c14',
+        width: boardArea.scrollWidth,
+        height: boardArea.scrollHeight,
+        style: {
+            'transform': 'none',
+            'transform-origin': 'top left'
         }
-    }).then(canvas => {
+    }).then(dataUrl => {
         const link = document.createElement('a');
         link.download = `ultimate-ttt-match-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
+        link.href = dataUrl;
         link.click();
+    }).catch(err => {
+        console.error('Export failed:', err);
     });
 };
 
