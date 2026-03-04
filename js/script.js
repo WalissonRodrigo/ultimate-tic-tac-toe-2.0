@@ -64,7 +64,20 @@ const TRANSLATIONS = {
         scoreSubWins: 'Sub-Wins',
         logoHTML: 'ULTIMATE<br>TIC-TAC-TOE <span class="cyan">2.0</span>',
         analyzeBoard: 'ANALYZE BOARD',
-        exportMatch: 'EXPORT MATCH'
+        exportMatch: 'EXPORT MATCH',
+        gameMode: 'MODE',
+        vsAI: 'vs AI',
+        vsPlayer: 'vs Player',
+        player2: 'PLAYER 2',
+        difficulty: 'DIFFICULTY',
+        easy: 'Easy',
+        medium: 'Medium',
+        hard: 'Hard',
+        theme: 'THEME',
+        matchHistory: 'MATCH HISTORY',
+        noMatches: 'No matches yet',
+        turns: 'turns',
+        duration: 'duration'
     },
     'pt-BR': {
         mainTitle: 'JOGO DA VELHA 2.0',
@@ -101,7 +114,20 @@ const TRANSLATIONS = {
         scoreSubWins: 'Sub-Vitórias',
         logoHTML: 'JOGO DA<br>VELHA <span class="cyan">2.0</span>',
         analyzeBoard: 'ANALISAR TABULEIRO',
-        exportMatch: 'EXPORTAR PARTIDA'
+        exportMatch: 'EXPORTAR PARTIDA',
+        gameMode: 'MODO',
+        vsAI: 'vs IA',
+        vsPlayer: 'vs Jogador',
+        player2: 'JOGADOR 2',
+        difficulty: 'DIFICULDADE',
+        easy: 'Fácil',
+        medium: 'Médio',
+        hard: 'Difícil',
+        theme: 'TEMA',
+        matchHistory: 'HISTÓRICO',
+        noMatches: 'Nenhuma partida ainda',
+        turns: 'turnos',
+        duration: 'duração'
     },
     'es-ES': {
         mainTitle: 'TRES EN RAYA 2.0',
@@ -138,7 +164,20 @@ const TRANSLATIONS = {
         scoreSubWins: 'Sub-Victorias',
         logoHTML: 'TRES EN<br>RAYA <span class="cyan">2.0</span>',
         analyzeBoard: 'ANALIZAR TABLERO',
-        exportMatch: 'EXPORTAR PARTIDA'
+        exportMatch: 'EXPORTAR PARTIDA',
+        gameMode: 'MODO',
+        vsAI: 'vs IA',
+        vsPlayer: 'vs Jugador',
+        player2: 'JUGADOR 2',
+        difficulty: 'DIFICULTAD',
+        easy: 'Fácil',
+        medium: 'Medio',
+        hard: 'Difícil',
+        theme: 'TEMA',
+        matchHistory: 'HISTORIAL',
+        noMatches: 'Sin partidas aún',
+        turns: 'turnos',
+        duration: 'duración'
     }
 };
 
@@ -172,11 +211,44 @@ function updateLanguage(lang) {
         if (t[key]) el.placeholder = t[key];
     });
 
+    // Update select option texts
+    document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+        const key = el.getAttribute('data-i18n-opt');
+        if (t[key]) el.textContent = t[key];
+    });
+
     // Save choice
     localStorage.setItem('utt_lang', lang);
     
     // Update dynamic UI elements immediately
     updateUI();
+    renderHistory();
+}
+
+// ============================================================
+// History Rendering
+// ============================================================
+function renderHistory() {
+    const historyList = document.getElementById('history-list');
+    const history = JSON.parse(localStorage.getItem('utt_history') || '[]');
+    const t = TRANSLATIONS[currentLang];
+    
+    if (history.length === 0) {
+        historyList.innerHTML = `<div class="history-empty">${t.noMatches}</div>`;
+        return;
+    }
+    
+    historyList.innerHTML = history.slice().reverse().map(match => {
+        const resultClass = match.winner === 'X' ? 'win-x' : match.winner === 'O' ? 'win-o' : 'win-draw';
+        const resultText = match.winner === 'draw' ? t.draw : (match.winner === 'X' ? t.victory : t.defeat);
+        const mins = Math.floor(match.duration / 60);
+        const secs = match.duration % 60;
+        const durationStr = `${mins}:${String(secs).padStart(2, '0')}`;
+        return `<div class="history-entry ${resultClass}">
+            <span class="history-result">${resultText}</span>
+            <span class="history-meta">${match.turns} ${t.turns} · ${durationStr} · ${match.date}</span>
+        </div>`;
+    }).join('');
 }
 
 // ============================================================
@@ -213,6 +285,10 @@ const langSelect      = document.getElementById('lang-select');
 // Management Buttons
 const changeProfileBtn = document.getElementById('change-profile-btn');
 const resetScoreBtn    = document.getElementById('reset-score-btn');
+const modeSelect       = document.getElementById('mode-select');
+const difficultySelect = document.getElementById('difficulty-select');
+const difficultyRow    = document.getElementById('difficulty-row');
+const themeToggle      = document.getElementById('theme-toggle');
 
 // ============================================================
 // State
@@ -237,7 +313,11 @@ function freshState() {
         subBoards: Array.from({length:9}, () => Array(9).fill(null)),
         activeSubGridIndex: -1,
         gameActive: true,
-        isAIThinking: false
+        isAIThinking: false,
+        gameMode: modeSelect ? modeSelect.value : 'ai',
+        aiDifficulty: difficultySelect ? difficultySelect.value : 'medium',
+        turnCount: 0,
+        gameStartTime: Date.now()
     };
 }
 
@@ -270,17 +350,24 @@ function loadFromLocal() {
 }
 
 // ============================================================
-// Timer
+// Timer (requestAnimationFrame for efficiency)
 // ============================================================
 function startTimer() {
-    clearInterval(timerInterval);
+    if (timerInterval) cancelAnimationFrame(timerInterval);
     turnStart = Date.now();
-    timerInterval = setInterval(() => {
+    function tick() {
         const elapsed = Math.floor((Date.now() - turnStart) / 1000);
         const m = Math.floor(elapsed / 60);
         const s = elapsed % 60;
         turnTimerEl.textContent = `${m}:${String(s).padStart(2,'0')}`;
-    }, 500);
+        timerInterval = requestAnimationFrame(tick);
+    }
+    timerInterval = requestAnimationFrame(tick);
+}
+
+function stopTimer() {
+    if (timerInterval) cancelAnimationFrame(timerInterval);
+    timerInterval = null;
 }
 
 // ============================================================
@@ -303,12 +390,15 @@ function initBoard(isContinuation = false) {
             cell.classList.add('cell');
             cell.dataset.sub = i;
             cell.dataset.cell = j;
+            cell.setAttribute('role', 'gridcell');
+            cell.setAttribute('aria-label', `Sub-grid ${i+1}, Cell ${j+1}, empty`);
             cell.addEventListener('click', onCellClick);
             
             // Re-apply piece if continuing
             if (state.subBoards[i][j]) {
                 cell.innerHTML = state.subBoards[i][j] === 'X' ? svgX() : svgO();
                 cell.classList.add('occupied', state.subBoards[i][j].toLowerCase());
+                cell.setAttribute('aria-label', `Sub-grid ${i+1}, Cell ${j+1}, ${state.subBoards[i][j]}`);
             }
 
             sub.appendChild(cell);
@@ -350,7 +440,8 @@ function initMiniGrid() {
 function onCellClick(e) {
     if (state.isAIThinking) return;
     if (!state.gameActive) return;
-    if (state.currentPlayer !== 'X') return;
+    // In AI mode, only X (human) can click. In PvP, both can.
+    if (state.gameMode === 'ai' && state.currentPlayer !== 'X') return;
 
     const cellTarget = e.target.closest('.cell');
     if (!cellTarget) return;
@@ -372,6 +463,8 @@ function executeMove(subIdx, cellIdx) {
     const cellEl = metaBoardEl.querySelector(`[data-sub="${subIdx}"][data-cell="${cellIdx}"]`);
     cellEl.innerHTML = state.currentPlayer === 'X' ? svgX() : svgO();
     cellEl.classList.add('occupied', state.currentPlayer.toLowerCase());
+    cellEl.setAttribute('aria-label', `Sub-grid ${subIdx+1}, Cell ${cellIdx+1}, ${state.currentPlayer}`);
+    state.turnCount++;
 
     // Sub-board check
     resolveSubBoard(subIdx);
@@ -397,8 +490,8 @@ function executeMove(subIdx, cellIdx) {
     updateUI();
     saveToLocal();
 
-    // AI
-    if (state.gameActive && state.currentPlayer === 'O') {
+    // AI (only in AI mode)
+    if (state.gameActive && state.currentPlayer === 'O' && state.gameMode === 'ai') {
         triggerAI();
     }
 }
@@ -470,21 +563,120 @@ function aiPlay() {
     const moves = getAvailableMoves();
     if (moves.length === 0) return;
 
-    // 1. Win
+    switch (state.aiDifficulty) {
+        case 'easy':   aiPlayEasy(moves); break;
+        case 'hard':   aiPlayHard(moves); break;
+        default:       aiPlayMedium(moves); break;
+    }
+}
+
+// Easy: 40% random, otherwise just block/win
+function aiPlayEasy(moves) {
+    if (Math.random() < 0.4) { pick(moves); return; }
     const win = moves.find(m => simulate(m, 'O'));
     if (win) { executeMove(win.sub, win.cell); return; }
+    pick(moves);
+}
 
-    // 2. Block
+// Medium: original heuristic
+function aiPlayMedium(moves) {
+    const win = moves.find(m => simulate(m, 'O'));
+    if (win) { executeMove(win.sub, win.cell); return; }
     const block = moves.find(m => simulate(m, 'X'));
     if (block) { executeMove(block.sub, block.cell); return; }
-
     const center = moves.filter(m => m.cell === 4);
     if (center.length) { pick(center); return; }
-
     const corners = moves.filter(m => [0,2,6,8].includes(m.cell));
     if (corners.length) { pick(corners); return; }
-
     pick(moves);
+}
+
+// Hard: minimax with alpha-beta pruning (depth 3)
+function aiPlayHard(moves) {
+    let bestScore = -Infinity;
+    let bestMove = moves[0];
+    // Deep copy entire state to prevent corruption from recursive calls
+    const savedSubBoards = state.subBoards.map(sb => [...sb]);
+    const savedMetaBoard = [...state.metaBoard];
+
+    for (const move of moves) {
+        // Apply move
+        state.subBoards[move.sub][move.cell] = 'O';
+        const w = checkWinner(state.subBoards[move.sub]);
+        if (w && w !== 'draw') state.metaBoard[move.sub] = w;
+        else if (state.subBoards[move.sub].every(c => c !== null)) state.metaBoard[move.sub] = 'draw';
+        const nextActive = (state.metaBoard[move.cell] !== null) ? -1 : move.cell;
+        const score = minimaxScore('X', 3, -Infinity, Infinity, nextActive);
+        // Full restore from deep copy
+        state.subBoards = savedSubBoards.map(sb => [...sb]);
+        state.metaBoard = [...savedMetaBoard];
+        if (score > bestScore) { bestScore = score; bestMove = move; }
+    }
+    // Final restore
+    state.subBoards = savedSubBoards;
+    state.metaBoard = savedMetaBoard;
+    executeMove(bestMove.sub, bestMove.cell);
+}
+
+function minimaxScore(player, depth, alpha, beta, activeIdx) {
+    const metaWin = checkWinner(state.metaBoard);
+    if (metaWin === 'O') return 100 + depth;
+    if (metaWin === 'X') return -100 - depth;
+    if (state.metaBoard.every(v => v !== null)) return 0;
+    if (depth === 0) return evaluateBoard();
+
+    const subs = activeIdx === -1
+        ? state.metaBoard.reduce((a,v,i) => { if(v===null) a.push(i); return a; }, [])
+        : [activeIdx];
+    const moves = [];
+    for (const s of subs) for (let c = 0; c < 9; c++)
+        if (state.subBoards[s][c] === null) moves.push({sub:s, cell:c});
+    if (moves.length === 0) return 0;
+
+    // Deep copy for safe recursive exploration
+    const savedSubBoards = state.subBoards.map(sb => [...sb]);
+    const savedMetaBoard = [...state.metaBoard];
+
+    if (player === 'O') {
+        let best = -Infinity;
+        for (const m of moves) {
+            state.subBoards[m.sub][m.cell] = 'O';
+            const w = checkWinner(state.subBoards[m.sub]);
+            if (w && w !== 'draw') state.metaBoard[m.sub] = w;
+            else if (state.subBoards[m.sub].every(c => c !== null)) state.metaBoard[m.sub] = 'draw';
+            const nxt = (state.metaBoard[m.cell] !== null) ? -1 : m.cell;
+            best = Math.max(best, minimaxScore('X', depth-1, alpha, beta, nxt));
+            state.subBoards = savedSubBoards.map(sb => [...sb]);
+            state.metaBoard = [...savedMetaBoard];
+            alpha = Math.max(alpha, best);
+            if (beta <= alpha) break;
+        }
+        return best;
+    } else {
+        let best = Infinity;
+        for (const m of moves) {
+            state.subBoards[m.sub][m.cell] = 'X';
+            const w = checkWinner(state.subBoards[m.sub]);
+            if (w && w !== 'draw') state.metaBoard[m.sub] = w;
+            else if (state.subBoards[m.sub].every(c => c !== null)) state.metaBoard[m.sub] = 'draw';
+            const nxt = (state.metaBoard[m.cell] !== null) ? -1 : m.cell;
+            best = Math.min(best, minimaxScore('O', depth-1, alpha, beta, nxt));
+            state.subBoards = savedSubBoards.map(sb => [...sb]);
+            state.metaBoard = [...savedMetaBoard];
+            beta = Math.min(beta, best);
+            if (beta <= alpha) break;
+        }
+        return best;
+    }
+}
+
+function evaluateBoard() {
+    let score = 0;
+    for (let i = 0; i < 9; i++) {
+        if (state.metaBoard[i] === 'O') score += 10;
+        else if (state.metaBoard[i] === 'X') score -= 10;
+    }
+    return score;
 }
 
 function getAvailableMoves() {
@@ -525,15 +717,13 @@ function updateUI() {
     turnSymbolEl.style.verticalAlign = 'middle';
 
     // Status panel
-    const pName = isX ? profile.name.toUpperCase() : t.aiUnit;
+    const pName = isX ? profile.name.toUpperCase() : (state.gameMode === 'pvp' ? t.player2 : t.aiUnit);
     statusTurnEl.textContent = `${pName} [${state.currentPlayer}]`;
     statusTurnEl.className = 'status-value ' + (isX ? 'cyan' : 'pink');
 
-    // Scoreboard
-    const xW = state.metaBoard.filter(v => v === 'X').length;
-    const oW = state.metaBoard.filter(v => v === 'O').length;
-    scoreXWinsEl.textContent = `${profile.wins + xW} Sub-Wins`;
-    scoreOWinsEl.textContent = `${profile.aiWins + oW} Sub-Wins`;
+    // Scoreboard — show accumulated match wins only
+    scoreXWinsEl.textContent = `${profile.wins} Wins`;
+    scoreOWinsEl.textContent = `${profile.aiWins} Wins`;
 
     // Active sector
     activeSectorEl.textContent = state.activeSubGridIndex === -1 ? t.all : SECTOR_NAMES[state.activeSubGridIndex];
@@ -567,8 +757,10 @@ function updateUI() {
 // ============================================================
 function endGame(winner) {
     state.gameActive = false;
-    clearInterval(timerInterval);
+    stopTimer();
+    updateUI(); // Refresh mini-grid to show the final sub-board win
     const t = TRANSLATIONS[currentLang];
+    const gameDuration = Math.floor((Date.now() - state.gameStartTime) / 1000);
 
     if (winner === 'draw') {
         modalIconEl.innerHTML = '<span style="font-size:4rem;color:var(--text-dim)">—</span>';
@@ -582,12 +774,21 @@ function endGame(winner) {
         profile.wins++;
     } else {
         modalIconEl.innerHTML = `<div style="width:64px;height:64px;margin:0 auto;">${svgOBig()}</div>`;
-        winnerTextEl.textContent = t.defeat;
-        winnerTextEl.style.color = 'var(--pink)';
-        winnerSubEl.textContent = t.aiDefeatMsg;
+        if (state.gameMode === 'pvp') {
+            winnerTextEl.textContent = t.victory;
+            winnerTextEl.style.color = 'var(--pink)';
+            winnerSubEl.textContent = t.winMsg.replace('{name}', t.player2);
+        } else {
+            winnerTextEl.textContent = t.defeat;
+            winnerTextEl.style.color = 'var(--pink)';
+            winnerSubEl.textContent = t.aiDefeatMsg;
+        }
         profile.aiWins++;
     }
 
+    // Save match to history
+    saveMatchHistory(winner, state.turnCount, gameDuration);
+    renderHistory();
     saveToLocal();
     winModal.classList.add('show');
     postGameActions.classList.add('show');
@@ -597,6 +798,7 @@ function endGame(winner) {
 // Reset
 // ============================================================
 function resetGame() {
+    stopTimer();
     state = freshState();
     winModal.classList.remove('show');
     postGameActions.classList.remove('show');
@@ -626,7 +828,14 @@ function handleInit() {
     }
     updateLanguage(currentLang);
 
-    // 2. Profile
+    // 2. Mode & Difficulty
+    const savedMode = localStorage.getItem('utt_mode');
+    if (savedMode) { modeSelect.value = savedMode; state.gameMode = savedMode; }
+    const savedDiff = localStorage.getItem('utt_difficulty');
+    if (savedDiff) { difficultySelect.value = savedDiff; state.aiDifficulty = savedDiff; }
+    difficultyRow.style.display = (modeSelect.value === 'ai') ? 'flex' : 'none';
+
+    // 3. Profile
     const savedProfile = localStorage.getItem('utt_profile');
     if (!savedProfile) {
         profileModal.classList.add('show');
@@ -662,6 +871,49 @@ saveProfileBtn.addEventListener('click', () => {
         bootGame();
     }
 });
+
+// Mode & Difficulty
+modeSelect.addEventListener('change', (e) => {
+    state.gameMode = e.target.value;
+    difficultyRow.style.display = e.target.value === 'ai' ? 'flex' : 'none';
+    localStorage.setItem('utt_mode', e.target.value);
+    resetGame();
+});
+
+difficultySelect.addEventListener('change', (e) => {
+    state.aiDifficulty = e.target.value;
+    localStorage.setItem('utt_difficulty', e.target.value);
+    resetGame();
+});
+
+// Theme Toggle
+let currentTheme = localStorage.getItem('utt_theme') || 'dark';
+function applyTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'dark' ? '🌙 Dark' : '☀️ Light';
+    localStorage.setItem('utt_theme', theme);
+}
+applyTheme(currentTheme);
+
+themeToggle.addEventListener('click', () => {
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+});
+
+// Match History
+function saveMatchHistory(winner, turns, duration) {
+    let history = JSON.parse(localStorage.getItem('utt_history') || '[]');
+    history.push({
+        winner,
+        turns,
+        duration,
+        difficulty: state.aiDifficulty,
+        mode: state.gameMode,
+        date: new Date().toLocaleDateString()
+    });
+    if (history.length > 5) history.shift();
+    localStorage.setItem('utt_history', JSON.stringify(history));
+}
 
 // ============================================================
 // Cookie Banner (LGPD)

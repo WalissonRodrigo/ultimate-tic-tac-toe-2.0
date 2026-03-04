@@ -787,6 +787,90 @@ body {
 }
 
 /* ============================================================
+   Light Theme
+   ============================================================ */
+[data-theme="light"] {
+    --bg-deep: #e8ecf4;
+    --bg-surface: #dde2ed;
+    --panel-bg: rgba(220, 228, 240, 0.92);
+    --text-white: #1a1e2e;
+    --text-dim: #4a5a72;
+    --text-muted: #8a9ab2;
+    --cyan: #0097a7;
+    --cyan-dim: rgba(0, 151, 167, 0.12);
+    --cyan-glow: rgba(0, 151, 167, 0.25);
+    --pink: #c2185b;
+    --pink-dim: rgba(194, 24, 91, 0.12);
+    --pink-glow: rgba(194, 24, 91, 0.25);
+    --border: rgba(0, 151, 167, 0.18);
+    --border-bright: rgba(0, 151, 167, 0.35);
+    --cell-bg: #d0d8e8;
+    --cell-hover: #c5cfe0;
+}
+
+[data-theme="light"] .bg-gradient {
+    background: linear-gradient(180deg, #e8ecf4 0%, #dde2ed 40%, #d5dce8 60%, #e0e4ef 80%, #e8ecf4 100%);
+}
+
+[data-theme="light"] .bg-grid {
+    background-image:
+        linear-gradient(rgba(0,151,167,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,151,167,0.06) 1px, transparent 1px);
+}
+
+[data-theme="light"] .bg-glow--cyan { opacity: 0.15; }
+[data-theme="light"] .bg-glow--pink { opacity: 0.1; }
+
+[data-theme="light"] .modal-content {
+    background: linear-gradient(160deg, #e0e5f0, #d5dce8);
+}
+
+[data-theme="light"] .cell svg line { stroke: #0097a7; }
+[data-theme="light"] .cell svg circle { stroke: #c2185b; }
+
+/* ============================================================
+   Match History
+   ============================================================ */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.history-empty {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px;
+}
+
+.history-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    border-left: 3px solid var(--text-muted);
+    font-family: var(--font-display);
+    letter-spacing: 0.5px;
+}
+
+.history-entry.win-x { border-left-color: var(--cyan); }
+.history-entry.win-o { border-left-color: var(--pink); }
+.history-entry.win-draw { border-left-color: var(--text-dim); }
+
+.history-result {
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.history-meta {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+}
+
+/* ============================================================
    Responsive — stack to single column on small screens
    ============================================================ */
 @media (max-width: 900px) {

@@ -139,6 +139,16 @@
                 </div>
             </div>
 
+            <!-- Panel: Match History -->
+            <div class="panel">
+                <div class="panel__header" data-i18n="matchHistory">MATCH HISTORY</div>
+                <div class="panel__body">
+                    <div id="history-list" class="history-list">
+                        <div class="history-empty" data-i18n="noMatches">No matches yet</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Panel: Settings (Language & Profile) -->
             <div class="panel">
                 <div class="panel__header" data-i18n="settings">SETTINGS</div>
@@ -150,6 +160,25 @@
                             <option value="pt-BR">Português (BR)</option>
                             <option value="es-ES">Español</option>
                         </select>
+                    </div>
+                    <div class="status-row">
+                        <label for="mode-select" class="status-label" data-i18n="gameMode">MODE</label>: 
+                        <select id="mode-select" class="lang-select">
+                            <option value="ai" data-i18n-opt="vsAI">vs AI</option>
+                            <option value="pvp" data-i18n-opt="vsPlayer">vs Player</option>
+                        </select>
+                    </div>
+                    <div class="status-row" id="difficulty-row">
+                        <label for="difficulty-select" class="status-label" data-i18n="difficulty">DIFFICULTY</label>: 
+                        <select id="difficulty-select" class="lang-select">
+                            <option value="easy" data-i18n-opt="easy">Easy</option>
+                            <option value="medium" data-i18n-opt="medium" selected>Medium</option>
+                            <option value="hard" data-i18n-opt="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="status-row">
+                        <label for="theme-toggle" class="status-label" data-i18n="theme">THEME</label>: 
+                        <button id="theme-toggle" class="settings-btn" style="padding:4px 12px;margin:0;">🌙 Dark</button>
                     </div>
                     <div class="settings-actions">
                         <button id="change-profile-btn" class="settings-btn" data-i18n="resetProfile">RESET PROFILE</button>
