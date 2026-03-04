@@ -6,7 +6,7 @@
 
 Uma reinterpretação moderna, estratégica e futurista do clássico Jogo da Velha. O **Ultimate Tic-Tac-Toe 2.0** eleva o desafio ao introduzir uma grade global composta por 9 sub-grades locais, onde cada jogada define o território válido para o próximo turno.
 
-![Ultimate Tic-Tac-Toe Preview](favicon.png)
+![Ultimate Tic-Tac-Toe Preview](/assets/favicon.png)
 
 ## 🚀 Demonstração
 
@@ -41,7 +41,7 @@ O projeto foi construído seguindo as diretrizes de acessibilidade web:
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/walissonrodrigo/ultimate-tic-tac-toe-2.0.git
+   git clone https://github.com/WalissonRodrigo/ultimate-tic-tac-toe-2.0.git
    ```
 2. Abra o arquivo `index.html` em qualquer navegador moderno.
 3. (Opcional) Use uma extensão como _Live Server_ para testar as funcionalidades do Service Worker.

@@ -57,6 +57,9 @@ const TRANSLATIONS = {
         all: 'ALL',
         resetProfile: 'RESET PROFILE',
         resetScore: 'RESET SCORE',
+        cookieMsg: 'We use cookies to improve your experience and analyze traffic. By clicking "Accept", you consent to our use of cookies.',
+        privacyPolicy: 'Privacy Policy',
+        accept: 'ACCEPT',
         scoreSubWins: 'Sub-Wins',
         logoHTML: 'ULTIMATE<br>TIC-TAC-TOE <span class="cyan">2.0</span>'
     },
@@ -88,6 +91,9 @@ const TRANSLATIONS = {
         all: 'TODOS',
         resetProfile: 'ALTERAR PERFIL',
         resetScore: 'RESETE PLACAR',
+        cookieMsg: 'Usamos cookies para melhorar sua experiência e analisar nosso tráfego. Ao clicar em "Aceitar", você concorda com nosso uso de cookies.',
+        privacyPolicy: 'Política de Privacidade',
+        accept: 'ACEITAR',
         scoreSubWins: 'Sub-Vitórias',
         logoHTML: 'JOGO DA<br>VELHA <span class="cyan">2.0</span>'
     },
@@ -119,6 +125,9 @@ const TRANSLATIONS = {
         all: 'TODOS',
         resetProfile: 'CAMBIAR PERFIL',
         resetScore: 'RESET MARCADOR',
+        cookieMsg: 'Utilizamos cookies para mejorar su experiencia y analizar el tráfico. Al hacer clic en "Aceptar", usted acepta nuestro uso de cookies.',
+        privacyPolicy: 'Política de Privacidad',
+        accept: 'ACEPTAR',
         scoreSubWins: 'Sub-Victorias',
         logoHTML: 'TRES EN<br>RAYA <span class="cyan">2.0</span>'
     }
@@ -639,6 +648,26 @@ saveProfileBtn.addEventListener('click', () => {
 });
 
 // ============================================================
+// Cookie Banner (LGPD)
+// ============================================================
+const cookieBanner = document.getElementById('cookie-banner');
+const cookieAcceptBtn = document.getElementById('cookie-accept');
+
+function checkCookieConsent() {
+    const consent = localStorage.getItem('utt_cookie_consent');
+    if (!consent) {
+        setTimeout(() => {
+            cookieBanner.classList.add('show');
+        }, 2000);
+    }
+}
+
+cookieAcceptBtn.addEventListener('click', () => {
+    localStorage.setItem('utt_cookie_consent', 'accepted');
+    cookieBanner.classList.remove('show');
+});
+
+// ============================================================
 // PWA Service Worker Registration
 // ============================================================
 if ('serviceWorker' in navigator) {
@@ -663,3 +692,4 @@ modalResetBtn.addEventListener('click', resetGame);
 
 // Start
 handleInit();
+checkCookieConsent();
