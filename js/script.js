@@ -183,7 +183,10 @@ function updateLanguage(lang) {
 // DOM References
 // ============================================================
 const modalAnalyzeBtn = document.getElementById('modal-analyze-btn');
-const modalExportBtn = document.getElementById('modal-export-btn');
+const modalExportBtn  = document.getElementById('modal-export-btn');
+const postGameActions = document.getElementById('post-game-actions');
+const toolbarResetBtn = document.getElementById('toolbar-reset-btn');
+const toolbarExportBtn = document.getElementById('toolbar-export-btn');
 const metaBoardEl     = document.getElementById('ultimate-board');
 const turnSymbolEl    = document.getElementById('current-turn-symbol');
 const turnTimerEl     = document.getElementById('turn-timer');
@@ -587,6 +590,7 @@ function endGame(winner) {
 
     saveToLocal();
     winModal.classList.add('show');
+    postGameActions.classList.add('show');
 }
 
 // ============================================================
@@ -595,6 +599,7 @@ function endGame(winner) {
 function resetGame() {
     state = freshState();
     winModal.classList.remove('show');
+    postGameActions.classList.remove('show');
     metaBoardEl.classList.remove('board-locked');
     aiThinkingRow.style.display = 'none';
     winnerTextEl.style.color = '';
@@ -700,23 +705,41 @@ function bootGame() {
 // Events
 resetBtn.addEventListener('click', resetGame);
 modalResetBtn.addEventListener('click', resetGame);
+toolbarResetBtn.addEventListener('click', resetGame);
 
 // Analysis & Export
 modalAnalyzeBtn.addEventListener('click', () => {
     winModal.classList.remove('show');
 });
 
-modalExportBtn.addEventListener('click', () => {
-    html2canvas(document.querySelector('.board-area'), {
+const exportHandler = () => {
+    const boardArea = document.querySelector('.board-area');
+    // Ensure the board has a clean background for the snapshot
+    html2canvas(boardArea, {
         backgroundColor: '#080c14',
-        scale: 2
+        scale: 3, // High-res
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        imageTimeout: 0,
+        onclone: (clonedDoc) => {
+            // Adjust cloned elements for better snapshot (if needed)
+            const clonedBoard = clonedDoc.querySelector('.board-area');
+            if (clonedBoard) {
+                clonedBoard.style.padding = '20px';
+                clonedBoard.style.backgroundColor = '#080c14';
+            }
+        }
     }).then(canvas => {
         const link = document.createElement('a');
         link.download = `ultimate-ttt-match-${Date.now()}.png`;
-        link.href = canvas.toDataURL();
+        link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
     });
-});
+};
+
+modalExportBtn.addEventListener('click', exportHandler);
+toolbarExportBtn.addEventListener('click', exportHandler);
 
 // Start
 handleInit();

@@ -761,6 +761,31 @@ body {
     color: var(--text);
 }
 
+.post-game-toolbar {
+    display: none;
+    justify-content: center;
+    gap: 15px;
+    padding: 1rem;
+    background: rgba(0, 229, 255, 0.05);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-game-toolbar.show {
+    display: flex;
+}
+
+.toolbar-btn {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    height: auto;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
 /* ============================================================
    Responsive — stack to single column on small screens
    ============================================================ */

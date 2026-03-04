@@ -1,4 +1,4 @@
-const CACHE_NAME = 'utt-v2';
+const CACHE_NAME = 'utt-v3';
 const ASSETS = [
   './',
   './index.html',

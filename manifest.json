@@ -9,9 +9,31 @@
   "icons": [
     {
       "src": "assets/favicon.png",
-      "sizes": "512x512",
+      "sizes": "640x640",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "assets/favicon.png",
+      "sizes": "640x640",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Ultimate Tic-Tac-Toe 2.0 - Multiplayer Matrix"
+    },
+    {
+      "src": "assets/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Ultimate Tic-Tac-Toe 2.0 - Cyberpunk Edition"
     }
   ]
 }
